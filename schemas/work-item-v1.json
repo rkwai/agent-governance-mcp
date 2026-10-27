@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-nature-company.dev/schemas/work-item-v1.json",
+  "title": "Work Item v1",
+  "description": "Durable bounded work request claimable through an expiring lease.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "work_item_id",
+    "company_id",
+    "cell_id",
+    "experiment_id",
+    "revision",
+    "status",
+    "kind",
+    "outcome_contract",
+    "eligible_capabilities",
+    "budget",
+    "approval_requirements",
+    "input_references",
+    "max_attempts",
+    "created_by_principal_id",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "work_item_id": { "$ref": "#/$defs/uuid" },
+    "company_id": { "$ref": "#/$defs/uuid" },
+    "cell_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "experiment_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "revision": { "type": "integer", "minimum": 1 },
+    "status": { "enum": ["open", "claimed", "completed", "failed", "cancelled"] },
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$" },
+    "outcome_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "acceptance_criteria", "result_schema_ref"],
+      "properties": {
+        "outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 25,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        },
+        "result_schema_ref": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "eligible_capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/capability" }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_cost_minor"],
+      "properties": {
+        "unit": { "$ref": "#/$defs/unitOfAccount" },
+        "currency": { "$ref": "#/$defs/currency" },
+        "maximum_cost_minor": { "type": "integer", "minimum": 0 }
+      },
+      "allOf": [{ "$ref": "#/$defs/moneyRequiresCurrency" }]
+    },
+    "approval_requirements": {
+      "oneOf": [
+        { "const": ["none"] },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["founder_before_claim", "founder_before_external_action", "founder_before_completion"]
+          }
+        }
+      ]
+    },
+    "input_references": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/resourceReference" }
+    },
+    "max_attempts": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "created_by_principal_id": { "$ref": "#/$defs/uuid" },
+    "created_at": { "$ref": "#/$defs/dateTime" },
+    "available_at": { "$ref": "#/$defs/dateTime" },
+    "deadline_at": {
+      "oneOf": [{ "$ref": "#/$defs/dateTime" }, { "type": "null" }]
+    },
+    "claimant_agent_id": {
+      "description": "Read-time claim observation. Null when the work item was never claimed.",
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "lease_id": {
+      "description": "Read-time claim observation. Null when the work item was never claimed.",
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "lease_expires_at": {
+      "description": "Read-time claim observation. Null when the work item was never claimed.",
+      "oneOf": [{ "$ref": "#/$defs/dateTime" }, { "type": "null" }]
+    },
+    "last_heartbeat_at": {
+      "description": "Read-time claim observation. Null when the work item was never claimed.",
+      "oneOf": [{ "$ref": "#/$defs/dateTime" }, { "type": "null" }]
+    },
+    "cancellation_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cancelled_at", "cancelled_by_principal_id", "reason"],
+        "properties": {
+          "cancelled_at": { "$ref": "#/$defs/dateTime" },
+          "cancelled_by_principal_id": { "$ref": "#/$defs/uuid" },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "superseded_by": { "$ref": "#/$defs/uuid" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "unitOfAccount": { "type": "string", "enum": ["money", "time", "cycles", "tries"] },
+    "moneyRequiresCurrency": {
+      "if": {
+        "anyOf": [
+          { "not": { "required": ["unit"] } },
+          { "properties": { "unit": { "const": "money" } }, "required": ["unit"] }
+        ]
+      },
+      "then": { "required": ["currency"] },
+      "else": { "not": { "required": ["currency"] } }
+    },
+    "capability": { "type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$" },
+    "resourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "revision"],
+      "properties": {
+        "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$" },
+        "id": { "$ref": "#/$defs/uuid" },
+        "revision": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-nature-company.dev/schemas/allocation-v1.json",
+  "title": "Allocation Decision v1",
+  "description": "Versioned proposal or committed portfolio resource decision with reproducible gates and rank.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "allocation_id",
+    "company_id",
+    "revision",
+    "decision_state",
+    "action",
+    "target",
+    "stage",
+    "gate_results",
+    "ranking",
+    "amount",
+    "constitution_id",
+    "constitution_version",
+    "rule_version",
+    "input_digest",
+    "rationale_summary",
+    "proposed_by_principal_id",
+    "proposed_by_run_id",
+    "proposed_at",
+    "decided_by_principal_id",
+    "decided_by_run_id",
+    "decided_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "allocation_id": { "$ref": "#/$defs/uuid" },
+    "company_id": { "$ref": "#/$defs/uuid" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "decision_state": { "enum": ["proposed", "committed", "rejected"] },
+    "action": { "enum": ["fund", "maintain", "clone", "mutate", "pause", "kill"] },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "revision"],
+      "properties": {
+        "kind": { "enum": ["cell", "experiment"] },
+        "id": { "$ref": "#/$defs/uuid" },
+        "revision": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "stage": { "enum": ["exploration", "exploitation", "containment"] },
+    "gate_results": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "passed", "evidence_ids"],
+        "properties": {
+          "gate": {
+            "enum": [
+              "legality_and_policy",
+              "truthfulness_and_claim_support",
+              "customer_outcome_floor",
+              "security_and_privacy",
+              "budget_and_cash",
+              "delivery_quality_floor",
+              "data_sufficiency_and_independence"
+            ]
+          },
+          "passed": { "type": "boolean" },
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/uuid" }
+          }
+        }
+      },
+      "allOf": [
+        { "$ref": "#/$defs/legalityGate" },
+        { "$ref": "#/$defs/truthfulnessGate" },
+        { "$ref": "#/$defs/outcomeGate" },
+        { "$ref": "#/$defs/securityGate" },
+        { "$ref": "#/$defs/budgetGate" },
+        { "$ref": "#/$defs/deliveryGate" },
+        { "$ref": "#/$defs/sufficiencyGate" }
+      ]
+    },
+    "ranking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formula", "score_numerator", "score_denominator", "input_snapshot"],
+      "properties": {
+        "formula": { "enum": ["exploitation-v1", "exploration-v1", "not-ranked"] },
+        "score_numerator": { "type": "integer" },
+        "score_denominator": { "type": "integer", "minimum": 1 },
+        "input_snapshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "expected_12m_contribution_profit_minor": { "type": "integer" },
+            "evidence_confidence_bps": { "$ref": "#/$defs/basisPoints" },
+            "expected_repeatability_bps": { "$ref": "#/$defs/basisPoints" },
+            "capital_at_risk_minor": { "type": "integer", "minimum": 0 },
+            "time_to_cash_days": { "type": "integer", "minimum": 0 },
+            "expected_decision_value_minor": { "type": "integer", "minimum": 0 },
+            "resolution_probability_bps": { "$ref": "#/$defs/basisPoints" },
+            "experiment_cost_minor": { "type": "integer", "minimum": 0 },
+            "experiment_duration_days": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "amount": {
+      "oneOf": [{ "$ref": "#/$defs/budgetAmount" }, { "type": "null" }]
+    },
+    "constitution_id": { "$ref": "#/$defs/uuid" },
+    "constitution_version": { "type": "integer", "minimum": 1 },
+    "rule_version": { "type": "string", "const": "fitness-v1" },
+    "input_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "rationale_summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "proposed_by_principal_id": { "$ref": "#/$defs/uuid" },
+    "proposed_by_run_id": { "$ref": "#/$defs/uuid" },
+    "proposed_at": { "$ref": "#/$defs/dateTime" },
+    "decided_by_principal_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "decided_by_run_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "decided_at": {
+      "oneOf": [{ "$ref": "#/$defs/dateTime" }, { "type": "null" }]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "decision_state": { "const": "proposed" } }, "required": ["decision_state"] },
+      "then": {
+        "properties": {
+          "decided_by_principal_id": { "type": "null" },
+          "decided_by_run_id": { "type": "null" },
+          "decided_at": { "type": "null" }
+        }
+      },
+      "else": {
+        "properties": {
+          "decided_by_principal_id": { "$ref": "#/$defs/uuid" },
+          "decided_by_run_id": {
+            "oneOf": [
+              { "$ref": "#/$defs/uuid" },
+              { "type": "null" }
+            ]
+          },
+          "decided_at": { "$ref": "#/$defs/dateTime" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "exploitation" } }, "required": ["stage"] },
+      "then": {
+        "properties": {
+          "ranking": { "$ref": "#/$defs/exploitationRanking" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "exploration" } }, "required": ["stage"] },
+      "then": {
+        "properties": {
+          "ranking": { "$ref": "#/$defs/explorationRanking" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "containment" } }, "required": ["stage"] },
+      "then": {
+        "properties": {
+          "ranking": { "$ref": "#/$defs/containmentRanking" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "action": { "const": "fund" } }, "required": ["action"] },
+      "then": { "properties": { "amount": { "$ref": "#/$defs/positiveBudgetAmount" } } },
+      "else": { "properties": { "amount": { "type": "null" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_state": { "const": "committed" },
+          "stage": { "const": "exploitation" }
+        },
+        "required": ["decision_state", "stage"]
+      },
+      "then": {
+        "properties": {
+          "gate_results": {
+            "items": {
+              "properties": { "passed": { "const": true } },
+              "required": ["passed"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "action": { "enum": ["pause", "kill"] } },
+        "required": ["action"]
+      },
+      "then": { "properties": { "stage": { "const": "containment" } } }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "containment" } }, "required": ["stage"] },
+      "then": { "properties": { "action": { "enum": ["pause", "kill"] } } }
+    }
+  ],
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "unitOfAccount": { "type": "string", "enum": ["money", "time", "cycles", "tries"] },
+    "basisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "moneyRequiresCurrency": {
+      "if": {
+        "anyOf": [
+          { "not": { "required": ["unit"] } },
+          { "properties": { "unit": { "const": "money" } }, "required": ["unit"] }
+        ]
+      },
+      "then": { "required": ["currency"] },
+      "else": { "not": { "required": ["currency"] } }
+    },
+    "budgetAmount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount_minor"],
+      "properties": {
+        "unit": { "$ref": "#/$defs/unitOfAccount" },
+        "currency": { "$ref": "#/$defs/currency" },
+        "amount_minor": { "type": "integer", "minimum": 0 }
+      },
+      "allOf": [{ "$ref": "#/$defs/moneyRequiresCurrency" }]
+    },
+    "positiveBudgetAmount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount_minor"],
+      "properties": {
+        "unit": { "$ref": "#/$defs/unitOfAccount" },
+        "currency": { "$ref": "#/$defs/currency" },
+        "amount_minor": { "type": "integer", "minimum": 1 }
+      },
+      "allOf": [{ "$ref": "#/$defs/moneyRequiresCurrency" }]
+    },
+    "legalityGate": {
+      "contains": { "properties": { "gate": { "const": "legality_and_policy" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "truthfulnessGate": {
+      "contains": { "properties": { "gate": { "const": "truthfulness_and_claim_support" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "outcomeGate": {
+      "contains": { "properties": { "gate": { "const": "customer_outcome_floor" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "securityGate": {
+      "contains": { "properties": { "gate": { "const": "security_and_privacy" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "budgetGate": {
+      "contains": { "properties": { "gate": { "const": "budget_and_cash" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "deliveryGate": {
+      "contains": { "properties": { "gate": { "const": "delivery_quality_floor" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "sufficiencyGate": {
+      "contains": { "properties": { "gate": { "const": "data_sufficiency_and_independence" } }, "required": ["gate"] },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "exploitationRanking": {
+      "type": "object",
+      "properties": {
+        "formula": { "const": "exploitation-v1" },
+        "input_snapshot": {
+          "required": [
+            "expected_12m_contribution_profit_minor",
+            "evidence_confidence_bps",
+            "expected_repeatability_bps",
+            "capital_at_risk_minor",
+            "time_to_cash_days"
+          ],
+          "not": {
+            "anyOf": [
+              { "required": ["expected_decision_value_minor"] },
+              { "required": ["resolution_probability_bps"] },
+              { "required": ["experiment_cost_minor"] },
+              { "required": ["experiment_duration_days"] }
+            ]
+          }
+        }
+      }
+    },
+    "explorationRanking": {
+      "type": "object",
+      "properties": {
+        "formula": { "const": "exploration-v1" },
+        "input_snapshot": {
+          "required": [
+            "expected_decision_value_minor",
+            "resolution_probability_bps",
+            "experiment_cost_minor",
+            "experiment_duration_days"
+          ],
+          "not": {
+            "anyOf": [
+              { "required": ["expected_12m_contribution_profit_minor"] },
+              { "required": ["evidence_confidence_bps"] },
+              { "required": ["expected_repeatability_bps"] },
+              { "required": ["capital_at_risk_minor"] },
+              { "required": ["time_to_cash_days"] }
+            ]
+          }
+        }
+      }
+    },
+    "containmentRanking": {
+      "type": "object",
+      "properties": {
+        "formula": { "const": "not-ranked" },
+        "score_numerator": { "const": 0 },
+        "score_denominator": { "const": 1 },
+        "input_snapshot": { "maxProperties": 0 }
+      }
+    }
+  }
+}

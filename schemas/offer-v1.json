@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-nature-company.dev/schemas/offer-v1.json",
+  "title": "Offer Version v1",
+  "description": "Immutable commercial hypothesis with explicit parent lineage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "offer_version_id",
+    "offer_id",
+    "company_id",
+    "cell_id",
+    "version",
+    "parent_offer_version_id",
+    "target_segment",
+    "urgent_problem",
+    "promised_outcome",
+    "proof",
+    "price",
+    "commercial_model",
+    "acquisition_channel",
+    "delivery_recipe",
+    "time_to_value_days",
+    "risk_reversal",
+    "registered_at",
+    "registered_by_principal_id"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "offer_version_id": { "$ref": "#/$defs/uuid" },
+    "offer_id": { "$ref": "#/$defs/uuid" },
+    "company_id": { "$ref": "#/$defs/uuid" },
+    "cell_id": { "$ref": "#/$defs/uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "parent_offer_version_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "target_segment": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "urgent_problem": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "promised_outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "proof": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 25,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+    },
+    "price": { "$ref": "#/$defs/money" },
+    "commercial_model": {
+      "enum": ["fixed_fee", "subscription", "usage", "outcome_based", "hybrid"]
+    },
+    "acquisition_channel": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "delivery_recipe": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+    },
+    "time_to_value_days": { "type": "integer", "minimum": 0, "maximum": 3650 },
+    "risk_reversal": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "mutation_summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "registered_at": { "$ref": "#/$defs/dateTime" },
+    "registered_by_principal_id": { "$ref": "#/$defs/uuid" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "parent_offer_version_id": { "type": "null" } } },
+      "then": {
+        "properties": { "version": { "const": 1 } },
+        "not": { "required": ["mutation_summary"] }
+      },
+      "else": {
+        "required": ["mutation_summary"],
+        "properties": { "version": { "type": "integer", "minimum": 2 } }
+      }
+    }
+  ],
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "amount_minor"],
+      "properties": {
+        "currency": { "$ref": "#/$defs/currency" },
+        "amount_minor": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

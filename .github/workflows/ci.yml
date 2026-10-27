@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Verify lockfile
+        run: uv lock --check
+
+      - name: Install locked dependencies
+        run: uv sync --locked --all-extras
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Test with branch coverage
+        run: >-
+          uv run coverage run
+          --branch
+          --source=ai_nature_company
+          --omit='*/postgres.py'
+          -m pytest
+
+      - name: Enforce coverage threshold
+        run: uv run coverage report --show-missing --fail-under=80
+
+      - name: Create coverage XML
+        run: uv run coverage xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build Railway container from frozen lockfile
+        run: docker build --file Dockerfile --tag ai-nature-company:${{ github.sha }} .
+
+      - name: Verify image is non-root and has system plus pinned CAs
+        run: |
+          docker run --rm --entrypoint /bin/sh \
+            ai-nature-company:${{ github.sha }} \
+            -c 'set -eu
+              test "$(id -u)" = "65532"
+              test "$(id -g)" = "65532"
+              dpkg-query -s ca-certificates | grep -q "^Status: install ok installed"
+              test -s /etc/ssl/certs/ca-certificates.crt
+              test -r /etc/ssl/certs/ca-certificates.crt
+              test -r /usr/local/share/ai-nature-company/supabase-prod-ca-2021.crt
+              test -r /usr/local/share/ca-certificates/supabase-prod-ca-2021.crt
+              echo "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7  /usr/local/share/ai-nature-company/supabase-prod-ca-2021.crt" | sha256sum -c -
+              payload_line=$(sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/{ /BEGIN/d; /END/d; p; q; }" \
+                /usr/local/share/ai-nature-company/supabase-prod-ca-2021.crt)
+              test -n "$payload_line"
+              grep -F -q "$payload_line" /etc/ssl/certs/ca-certificates.crt
+            '
+
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      ANC_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked --all-extras
+
+      - name: Run PostgreSQL integration contract
+        run: >-
+          uv run pytest
+          tests/persistence/test_postgres_integration.py
+          tests/persistence/test_postgres_attribution.py
+          tests/persistence/test_authority_hardening.py
+          tests/persistence/test_oauth_resource_aliases.py
+          tests/operations/test_closed_beta_postgres_e2e.py
+          -q

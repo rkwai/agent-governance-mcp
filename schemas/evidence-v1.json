@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-nature-company.dev/schemas/evidence-v1.json",
+  "title": "Evidence Event v1",
+  "description": "Immutable, attributable observation with provenance, decay, and correction lineage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "company_id",
+    "cell_id",
+    "offer_version_id",
+    "experiment_id",
+    "type",
+    "source_system",
+    "source_reference",
+    "observed_at",
+    "recorded_at",
+    "strength",
+    "confidence_bps",
+    "provenance_quality",
+    "causal_distance",
+    "half_life_seconds",
+    "observation",
+    "lineage",
+    "recorded_by_principal_id",
+    "agent_run_id"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "evidence_id": { "$ref": "#/$defs/uuid" },
+    "company_id": { "$ref": "#/$defs/uuid" },
+    "cell_id": { "$ref": "#/$defs/uuid" },
+    "offer_version_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "experiment_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "type": {
+      "enum": [
+        "reply",
+        "meeting",
+        "proposal",
+        "commitment",
+        "cash",
+        "usage",
+        "outcome",
+        "cost",
+        "refund",
+        "complaint",
+        "churn",
+        "delivery_overrun",
+        "manual_exception",
+        "security_incident",
+        "policy_violation",
+        "other"
+      ]
+    },
+    "source_system": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "source_reference": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "observed_at": { "$ref": "#/$defs/dateTime" },
+    "recorded_at": { "$ref": "#/$defs/dateTime" },
+    "strength": { "type": "number", "minimum": 0 },
+    "confidence_bps": { "$ref": "#/$defs/basisPoints" },
+    "provenance_quality": { "enum": ["authoritative", "verified", "attested", "inferred"] },
+    "causal_distance": { "enum": ["direct", "near", "intermediate", "proxy"] },
+    "half_life_seconds": { "type": "integer", "minimum": 1 },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "summary"],
+      "properties": {
+        "value": { "type": ["string", "number", "boolean", "null"] },
+        "unit": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation", "related_evidence_id"],
+      "properties": {
+        "relation": { "enum": ["original", "correction", "supersession", "retraction"] },
+        "related_evidence_id": {
+          "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "relation": { "const": "original" } }, "required": ["relation"] },
+          "then": { "properties": { "related_evidence_id": { "type": "null" } } },
+          "else": { "properties": { "related_evidence_id": { "$ref": "#/$defs/uuid" } } }
+        }
+      ]
+    },
+    "recorded_by_principal_id": { "$ref": "#/$defs/uuid" },
+    "agent_run_id": { "$ref": "#/$defs/uuid" },
+    "external_action_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    }
+  },
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "basisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 }
+  }
+}
+

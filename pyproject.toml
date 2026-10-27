@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-nature-company"
+version = "0.1.0"
+description = "Deterministic MCP substrate for an agent-operated evolutionary company"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "rkwai", email = "rkwai@users.noreply.github.com" }]
+dependencies = [
+  "mcp==2.1.1",
+  "psycopg[binary,pool]>=3.2.9,<4",
+  "pydantic>=2.11,<3",
+  "pyjwt[crypto]>=2.10,<3",
+  "uvicorn>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "hypothesis>=6.138,<7",
+  "jsonschema>=4.25,<5",
+  "pytest>=8.4,<9",
+  "pytest-asyncio>=1.1,<2",
+  "pytest-cov>=6.2,<7",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+ai-nature-company = "ai_nature_company.__main__:main"
+ai-nature-demo = "ai_nature_company.runner:main"
+ai-nature-http = "ai_nature_company.hosted:main"
+ai-nature-tick = "ai_nature_company.tick:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_nature_company"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"supabase/migrations" = "ai_nature_company/shipped_migrations"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/ai_nature_company",
+  "/supabase/migrations",
+]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --strict-config -ra"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.coverage.run]
+branch = true
+source = ["ai_nature_company"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80

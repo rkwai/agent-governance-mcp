@@ -1,0 +1,391 @@
+{
+  "agents": [
+    {
+      "agent_instance_id": "a07f4267-0637-5fa2-ba88-c80a6816d71b",
+      "allowed_actions": [
+        "allocation.commit",
+        "allocation.propose",
+        "cell.amend",
+        "cell.create",
+        "cell.get",
+        "cell.list",
+        "cell.transition",
+        "company.describe",
+        "constitution.get",
+        "decision.explain",
+        "experiment.amend",
+        "experiment.close",
+        "experiment.record_send",
+        "experiment.register",
+        "experiment.start",
+        "gate.evaluate",
+        "offer.mutate",
+        "offer.register",
+        "protocol.describe",
+        "work.cancel",
+        "work.create"
+      ],
+      "cell_id": "ea698880-c22f-553d-a81c-7428f53d752a",
+      "definition": {
+        "compatible_roles": [
+          "cell_owner"
+        ],
+        "constraints": {
+          "may_change_constitution": false,
+          "may_commit_allocation": true,
+          "may_self_evaluate": false,
+          "requires_active_lease_for_work": false
+        },
+        "declared_capabilities": [
+          "allocation.commit",
+          "allocation.propose",
+          "cell.amend",
+          "cell.create",
+          "cell.get",
+          "cell.list",
+          "cell.transition",
+          "company.describe",
+          "constitution.get",
+          "decision.explain",
+          "experiment.amend",
+          "experiment.close",
+          "experiment.record_send",
+          "experiment.register",
+          "experiment.start",
+          "gate.evaluate",
+          "offer.mutate",
+          "offer.register",
+          "protocol.describe",
+          "work.cancel",
+          "work.create"
+        ],
+        "definition_id": "10000000-0000-4000-8000-000000000001",
+        "description": "Owner-led operating configuration. Bounded allocate/contain apply only to the bound cell; irreversible kill stays founder-only.",
+        "input_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/work-item-v1.json"
+        },
+        "instructions": [
+          "Read the active constitution and current aggregate revisions before proposing mutations.",
+          "Own the full offer loop from target customer through collected cash, delivery outcome, and learning.",
+          "Create immutable offer versions and preregister experiments before execution begins.",
+          "Delegate only bounded work with an outcome contract, budget, eligible capabilities, and approval requirements.",
+          "Treat failed experiments as useful only when they produce trustworthy evidence and cheaper future decisions.",
+          "Propose and commit bounded fund, maintain, clone, mutate, or pause decisions only for your bound cell.",
+          "Pause or contain your bound cell when a frozen stop rule or operating limit requires it.",
+          "Never evaluate your own experiment or authorize irreversible company or cell kill.",
+          "Escalate constitution changes and irreversible kill to the human founder."
+        ],
+        "name": "phase1-cell-owner",
+        "output_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/allocation-v1.json"
+        },
+        "purpose": "Own one offer cell end to end, run bounded experiments, and commit operational allocation or pause for that cell.",
+        "schema_version": 1,
+        "supersedes_definition_id": null,
+        "version": 1
+      },
+      "principal_id": "b5b99111-6c6b-5d1f-a99d-77a496e6e434",
+      "role": "cell_owner"
+    },
+    {
+      "agent_instance_id": "90eaea76-51dc-555d-a622-ef63f362a914",
+      "allowed_actions": [
+        "company.describe",
+        "constitution.get",
+        "economics.append",
+        "evidence.append",
+        "protocol.describe",
+        "work.claim",
+        "work.complete",
+        "work.fail",
+        "work.heartbeat",
+        "work.release"
+      ],
+      "cell_id": "ea698880-c22f-553d-a81c-7428f53d752a",
+      "definition": {
+        "compatible_roles": [
+          "specialist"
+        ],
+        "constraints": {
+          "may_change_constitution": false,
+          "may_commit_allocation": false,
+          "may_self_evaluate": false,
+          "requires_active_lease_for_work": true
+        },
+        "declared_capabilities": [
+          "company.describe",
+          "constitution.get",
+          "economics.append",
+          "evidence.append",
+          "protocol.describe",
+          "work.claim",
+          "work.complete",
+          "work.fail",
+          "work.heartbeat",
+          "work.release"
+        ],
+        "definition_id": "10000000-0000-4000-8000-000000000002",
+        "description": "Phase 1 execution configuration. A definition declaration is not a permission grant.",
+        "input_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/work-item-v1.json"
+        },
+        "instructions": [
+          "Claim only work for which the verified principal has an eligible capability.",
+          "Keep the lease alive while operating and stop immediately if it expires or is revoked.",
+          "Use only the work item's referenced inputs, approved actions, and maximum budget.",
+          "Record attributable evidence and actual cost; do not infer success from task completion.",
+          "Complete, fail, or release work with a typed result and never evaluate the experiment you executed."
+        ],
+        "name": "phase1-specialist",
+        "output_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/evidence-v1.json"
+        },
+        "purpose": "Execute one narrowly scoped work item inside its lease, authority, acceptance contract, and budget.",
+        "schema_version": 1,
+        "supersedes_definition_id": null,
+        "version": 1
+      },
+      "principal_id": "24d32763-7ffa-5a69-8ff3-36907433b55b",
+      "role": "specialist"
+    },
+    {
+      "agent_instance_id": "992c505a-7508-5f35-a7ea-36acf8a48daa",
+      "allowed_actions": [
+        "company.describe",
+        "constitution.get",
+        "decision.explain",
+        "evaluation.submit",
+        "gate.evaluate",
+        "protocol.describe",
+        "work.claim",
+        "work.complete",
+        "work.fail",
+        "work.heartbeat",
+        "work.release"
+      ],
+      "cell_id": "ea698880-c22f-553d-a81c-7428f53d752a",
+      "definition": {
+        "compatible_roles": [
+          "evaluator"
+        ],
+        "constraints": {
+          "may_change_constitution": false,
+          "may_commit_allocation": false,
+          "may_self_evaluate": false,
+          "requires_active_lease_for_work": false
+        },
+        "declared_capabilities": [
+          "company.describe",
+          "constitution.get",
+          "decision.explain",
+          "evaluation.submit",
+          "gate.evaluate",
+          "protocol.describe",
+          "work.claim",
+          "work.complete",
+          "work.fail",
+          "work.heartbeat",
+          "work.release"
+        ],
+        "definition_id": "10000000-0000-4000-8000-000000000003",
+        "description": "Phase 1 evaluation configuration isolated from experiment execution and allocation.",
+        "input_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/experiment-v1.json"
+        },
+        "instructions": [
+          "Refuse evaluation when this principal executed the experiment or independence cannot be verified.",
+          "Evaluate only the protocol revision frozen at registration and identify every supporting evidence event.",
+          "Return passed, failed, or inconclusive; never repair missing data by inventing an observation.",
+          "Report stop-rule and policy violations independently of positive fitness signals.",
+          "Submit a bounded decision record, not hidden reasoning or an allocation commitment."
+        ],
+        "name": "phase1-independent-evaluator",
+        "output_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/evaluation-v1.json"
+        },
+        "purpose": "Evaluate a frozen experiment revision against preregistered criteria using attributable evidence.",
+        "schema_version": 1,
+        "supersedes_definition_id": null,
+        "version": 1
+      },
+      "principal_id": "6419109e-fb7b-5ade-a623-1c5eb15d7c57",
+      "role": "evaluator"
+    },
+    {
+      "agent_instance_id": "c4af7d87-0ec9-5438-96fa-b9db0ba06260",
+      "allowed_actions": [
+        "allocation.commit",
+        "allocation.propose",
+        "cell.amend",
+        "cell.create",
+        "cell.get",
+        "cell.list",
+        "cell.transition",
+        "company.describe",
+        "constitution.get",
+        "decision.explain",
+        "experiment.amend",
+        "experiment.close",
+        "experiment.record_send",
+        "experiment.register",
+        "experiment.start",
+        "gate.evaluate",
+        "offer.mutate",
+        "offer.register",
+        "protocol.describe",
+        "work.cancel",
+        "work.create"
+      ],
+      "cell_id": "17f51bf7-f155-5f0e-a2cb-9e38b4ab5ba5",
+      "definition": {
+        "compatible_roles": [
+          "cell_owner"
+        ],
+        "constraints": {
+          "may_change_constitution": false,
+          "may_commit_allocation": true,
+          "may_self_evaluate": false,
+          "requires_active_lease_for_work": false
+        },
+        "declared_capabilities": [
+          "allocation.commit",
+          "allocation.propose",
+          "cell.amend",
+          "cell.create",
+          "cell.get",
+          "cell.list",
+          "cell.transition",
+          "company.describe",
+          "constitution.get",
+          "decision.explain",
+          "experiment.amend",
+          "experiment.close",
+          "experiment.record_send",
+          "experiment.register",
+          "experiment.start",
+          "gate.evaluate",
+          "offer.mutate",
+          "offer.register",
+          "protocol.describe",
+          "work.cancel",
+          "work.create"
+        ],
+        "definition_id": "10000000-0000-4000-8000-000000000001",
+        "description": "Owner-led operating configuration. Bounded allocate/contain apply only to the bound cell; irreversible kill stays founder-only.",
+        "input_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/work-item-v1.json"
+        },
+        "instructions": [
+          "Read the active constitution and current aggregate revisions before proposing mutations.",
+          "Own the full offer loop from target customer through collected cash, delivery outcome, and learning.",
+          "Create immutable offer versions and preregister experiments before execution begins.",
+          "Delegate only bounded work with an outcome contract, budget, eligible capabilities, and approval requirements.",
+          "Treat failed experiments as useful only when they produce trustworthy evidence and cheaper future decisions.",
+          "Propose and commit bounded fund, maintain, clone, mutate, or pause decisions only for your bound cell.",
+          "Pause or contain your bound cell when a frozen stop rule or operating limit requires it.",
+          "Never evaluate your own experiment or authorize irreversible company or cell kill.",
+          "Escalate constitution changes and irreversible kill to the human founder."
+        ],
+        "name": "phase1-cell-owner",
+        "output_contract": {
+          "media_type": "application/json",
+          "schema_ref": "schemas/allocation-v1.json"
+        },
+        "purpose": "Own one offer cell end to end, run bounded experiments, and commit operational allocation or pause for that cell.",
+        "schema_version": 1,
+        "supersedes_definition_id": null,
+        "version": 1
+      },
+      "principal_id": "07235e76-2026-5ebe-a283-97b63b531b84",
+      "role": "cell_owner"
+    }
+  ],
+  "cells": [
+    {
+      "budget_duration_days": 90,
+      "budget_id": "ff61f6ea-62df-5f1a-b0fb-c4fa9c237c4c",
+      "budget_limit": "500.00",
+      "cell_id": "ea698880-c22f-553d-a81c-7428f53d752a",
+      "currency": "USD",
+      "name": "Example Operating Cell",
+      "objective": "Operate one placeholder offer loop for identity canaries."
+    },
+    {
+      "budget_duration_days": 90,
+      "budget_id": "924d9fce-0cb9-5383-8098-af9fd583de12",
+      "budget_limit": "100.00",
+      "cell_id": "17f51bf7-f155-5f0e-a2cb-9e38b4ab5ba5",
+      "currency": "USD",
+      "name": "Example Scope-Control Cell",
+      "objective": "Remain empty so cross-cell denial canaries stay meaningful."
+    }
+  ],
+  "company": {
+    "budget": {
+      "budget_id": "8fe776f1-7a73-5d01-83a4-5d750592d039",
+      "currency": "USD",
+      "duration_days": 365,
+      "limit": "1000.00"
+    },
+    "company_id": "9980c795-7fe8-5f9f-b98a-88002752c899",
+    "constitution": {
+      "authority_policy": {
+        "founder_principal_ids": [
+          "810f2d29-eee7-5de8-ab4e-43984b712f68"
+        ],
+        "human_approval_actions": [
+          "constitution.activate"
+        ],
+        "irreversible_actions": [
+          "company.dissolve"
+        ]
+      },
+      "budget_policy": {
+        "cell_limit_minor": 50000,
+        "company_limit_minor": 100000,
+        "currency": "USD",
+        "experiment_limit_minor": 10000,
+        "exploration_share_bps": 2000,
+        "single_action_limit_minor": 10000
+      },
+      "constitution_id": "38a8ae9a-9290-5e61-a356-ec571c4704cd",
+      "fitness_policy": {
+        "allocation_cadence_days": 7,
+        "minimum_customer_outcome_bps": 7000,
+        "minimum_delivery_quality_bps": 8000,
+        "minimum_evidence_count": 1,
+        "required_gates": [
+          "legality_and_policy",
+          "truthfulness_and_claim_support",
+          "customer_outcome_floor",
+          "security_and_privacy",
+          "budget_and_cash",
+          "delivery_quality_floor",
+          "data_sufficiency_and_independence"
+        ],
+        "rule_version": "fitness-v1"
+      },
+      "mission": "Create verified customer value under founder control.",
+      "risk_policy": {
+        "max_external_messages_per_experiment": 10,
+        "pricing_floor_minor": 0,
+        "prohibited_actions": [
+          "claim.fabricate"
+        ],
+        "regulated_market_entry_requires_founder": true
+      },
+      "schema_version": 1,
+      "version": 1
+    },
+    "founder_principal_id": "810f2d29-eee7-5de8-ab4e-43984b712f68",
+    "name": "Example Closed Beta Company"
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-nature-company.dev/schemas/company-constitution-v1.json",
+  "title": "Company Constitution v1",
+  "description": "Versioned founder-controlled authority, risk, budget, and fitness policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "constitution_id",
+    "company_id",
+    "version",
+    "status",
+    "mission",
+    "authority_policy",
+    "risk_policy",
+    "budget_policy",
+    "fitness_policy",
+    "created_at",
+    "created_by_principal_id"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "constitution_id": { "$ref": "#/$defs/uuid" },
+    "company_id": { "$ref": "#/$defs/uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "status": { "enum": ["draft", "active", "superseded"] },
+    "mission": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "authority_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["founder_principal_ids", "irreversible_actions", "human_approval_actions"],
+      "properties": {
+        "founder_principal_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/uuid" }
+        },
+        "irreversible_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/action" }
+        },
+        "human_approval_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/action" }
+        }
+      }
+    },
+    "risk_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prohibited_actions",
+        "pricing_floor_minor",
+        "max_external_messages_per_experiment",
+        "regulated_market_entry_requires_founder"
+      ],
+      "properties": {
+        "prohibited_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/action" }
+        },
+        "pricing_floor_minor": { "type": "integer", "minimum": 0 },
+        "max_external_messages_per_experiment": { "type": "integer", "minimum": 0 },
+        "regulated_market_entry_requires_founder": { "const": true }
+      }
+    },
+    "budget_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "company_limit_minor",
+        "cell_limit_minor",
+        "experiment_limit_minor",
+        "single_action_limit_minor",
+        "exploration_share_bps"
+      ],
+      "properties": {
+        "unit": { "$ref": "#/$defs/unitOfAccount" },
+        "currency": { "$ref": "#/$defs/currency" },
+        "company_limit_minor": { "type": "integer", "minimum": 0 },
+        "cell_limit_minor": { "type": "integer", "minimum": 0 },
+        "experiment_limit_minor": { "type": "integer", "minimum": 0 },
+        "single_action_limit_minor": { "type": "integer", "minimum": 0 },
+        "exploration_share_bps": { "$ref": "#/$defs/basisPoints" }
+      },
+      "allOf": [{ "$ref": "#/$defs/moneyRequiresCurrency" }]
+    },
+    "fitness_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_version",
+        "required_gates",
+        "minimum_evidence_count",
+        "minimum_customer_outcome_bps",
+        "minimum_delivery_quality_bps",
+        "allocation_cadence_days"
+      ],
+      "properties": {
+        "rule_version": { "type": "string", "const": "fitness-v1" },
+        "required_gates": {
+          "type": "array",
+          "minItems": 7,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "legality_and_policy",
+              "truthfulness_and_claim_support",
+              "customer_outcome_floor",
+              "security_and_privacy",
+              "budget_and_cash",
+              "delivery_quality_floor",
+              "data_sufficiency_and_independence"
+            ]
+          }
+        },
+        "minimum_evidence_count": { "type": "integer", "minimum": 1 },
+        "minimum_customer_outcome_bps": { "$ref": "#/$defs/basisPoints" },
+        "minimum_delivery_quality_bps": { "$ref": "#/$defs/basisPoints" },
+        "allocation_cadence_days": { "type": "integer", "minimum": 1, "maximum": 365 }
+      }
+    },
+    "created_at": { "$ref": "#/$defs/dateTime" },
+    "created_by_principal_id": { "$ref": "#/$defs/uuid" },
+    "effective_at": {
+      "oneOf": [{ "$ref": "#/$defs/dateTime" }, { "type": "null" }]
+    },
+    "supersedes_constitution_id": {
+      "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "active" } }, "required": ["status"] },
+      "then": {
+        "required": ["effective_at"],
+        "properties": { "effective_at": { "$ref": "#/$defs/dateTime" } }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "superseded" } }, "required": ["status"] },
+      "then": {
+        "required": ["supersedes_constitution_id"],
+        "properties": { "supersedes_constitution_id": { "$ref": "#/$defs/uuid" } }
+      }
+    }
+  ],
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "unitOfAccount": { "type": "string", "enum": ["money", "time", "cycles", "tries"] },
+    "moneyRequiresCurrency": {
+      "if": {
+        "anyOf": [
+          { "not": { "required": ["unit"] } },
+          { "properties": { "unit": { "const": "money" } }, "required": ["unit"] }
+        ]
+      },
+      "then": { "required": ["currency"] },
+      "else": { "not": { "required": ["currency"] } }
+    },
+    "basisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "action": { "type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$" }
+  }
+}

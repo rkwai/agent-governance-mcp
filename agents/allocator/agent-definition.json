@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "definition_id": "10000000-0000-4000-8000-000000000004",
+  "version": 1,
+  "name": "phase1-portfolio-allocator",
+  "purpose": "Apply eligibility gates before committing a bounded, constitution-compliant portfolio decision.",
+  "instructions": [
+    "Reject exploitation allocation whenever any required eligibility gate fails.",
+    "Use the active constitution and exact fitness rule version; never silently tune weights or thresholds.",
+    "Keep exploration and exploitation budgets separate and rank only eligible candidates within a stage.",
+    "Record the full input snapshot, integer score fraction, target revision, and rule version.",
+    "Never execute or evaluate the experiment whose allocation is being decided."
+  ],
+  "declared_capabilities": [
+    "allocation.commit",
+    "allocation.propose",
+    "cell.get",
+    "cell.list",
+    "company.describe",
+    "constitution.get",
+    "decision.explain",
+    "gate.evaluate",
+    "protocol.describe"
+  ],
+  "compatible_roles": ["allocator"],
+  "constraints": {
+    "may_self_evaluate": false,
+    "may_commit_allocation": true,
+    "may_change_constitution": false,
+    "requires_active_lease_for_work": false
+  },
+  "input_contract": {
+    "media_type": "application/json",
+    "schema_ref": "schemas/evaluation-v1.json"
+  },
+  "output_contract": {
+    "media_type": "application/json",
+    "schema_ref": "schemas/allocation-v1.json"
+  },
+  "supersedes_definition_id": null,
+  "description": "Phase 1 selection configuration. Commit capability is effective only under an allocator grant."
+}
