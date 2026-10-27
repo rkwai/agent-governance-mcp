@@ -473,7 +473,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0001-4000-8000-73dadf3ea002",
         "sent_at": "2026-09-21T03:22:29Z",
         "evidence_id": LIVE_SHARED_EVIDENCE_ID,
-        "founder_signoff_ref": ("gmail:<thread-id> founder@example.test -> buyer1@acme.example.test"),
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer1@acme.example.test"
+        ),
         "idempotency_key": "record-send:owner-com:1a0c1fc8e6bdf0a1",
     },
     {
@@ -481,7 +483,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0002-4000-8000-73dadf3ea002",
         "sent_at": "2026-09-21T03:22:29Z",
         "evidence_id": LIVE_SHARED_EVIDENCE_ID,
-        "founder_signoff_ref": ("gmail:<thread-id> founder@example.test -> buyer2@globex.example.test"),
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer2@globex.example.test"
+        ),
         "idempotency_key": "record-send:globex:1a0c1fc8c8f0b9aa",
     },
     {
@@ -489,7 +493,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0003-4000-8000-f5c0a7b9c002",
         "sent_at": "2026-09-23T02:13:56Z",
         "evidence_id": "f5c0a7b9-2d96-4000-8000-80b066dac002",
-        "founder_signoff_ref": "gmail:<thread-id> founder@example.test -> buyer3@initech.example.test",
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer3@initech.example.test"
+        ),
         "idempotency_key": "record-send:initech:1a0cc0a82ccf01e8",
     },
     {
@@ -497,7 +503,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0004-4000-8000-b7d3f9a1e002",
         "sent_at": "2026-09-24T03:05:27Z",
         "evidence_id": "b7d3f9a1-4e07-4000-8000-80b066dae002",
-        "founder_signoff_ref": ("gmail:<thread-id> founder@example.test -> buyer4@hooli.example.test"),
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer4@hooli.example.test"
+        ),
         "idempotency_key": "record-send:hooli:1a0d1600ace542ac",
     },
     {
@@ -505,7 +513,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0005-4000-8000-d8b3e0f25001",
         "sent_at": "2026-09-12T14:13:43Z",
         "evidence_id": "d8b3e0f2-5c29-4000-8000-80b066da5001",
-        "founder_signoff_ref": ("gmail:<thread-id> founder@example.test -> buyer5@stark.example.test"),
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer5@stark.example.test"
+        ),
         "idempotency_key": "record-send:plug:1a095f788fa297ca",
     },
     {
@@ -513,7 +523,9 @@ LIVE_BACKFILL = (
         "send_id": "80b066da-0006-4000-8000-d9f5a1c3f002",
         "sent_at": "2026-09-26T01:52:56Z",
         "evidence_id": "d9f5a1c3-4e07-4000-8000-80b066daf002",
-        "founder_signoff_ref": ("gmail:<thread-id> founder@example.test -> buyer6@umbrella.example.test"),
+        "founder_signoff_ref": (
+            "gmail:<thread-id> founder@example.test -> buyer6@umbrella.example.test"
+        ),
         "idempotency_key": "record-send:umbrella:1a0db6a5d03728e6",
     },
 )
